@@ -1,7 +1,7 @@
 # date
 
-This Gren package provides a simple `Date` type for working with dates without times or zones.
-It's a port of the amazing elm-package: atlewee/date
+This Gren package provides a simple `Date` type for working with dates without times or zones.    
+It's a port of the amazing elm-package: justinmimbs/date
 
 ## Installation
 
