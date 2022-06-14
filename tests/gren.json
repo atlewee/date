@@ -4,13 +4,13 @@
         "../src",
         "."
     ],
-    "elm-version": "0.19.1",
+    "gren-version": "0.1.0",
     "dependencies": {
         "direct": {
-            "elm/core": "1.0.0",
-            "elm/json": "1.0.0",
-            "elm/parser": "1.0.0",
-            "elm/time": "1.0.0"
+            "gren-lang/core": "1.0.0",
+            "gren-lang/json": "1.0.0",
+            "gren-lang/parser": "1.0.0",
+            "gren-lang/time": "1.0.0"
         },
         "indirect": {}
     },

@@ -8,7 +8,7 @@ import Task exposing (Task)
 import Time exposing (Month(..))
 
 
-main : Program () Model Msg
+main : Program {} Model Msg
 main =
     Browser.document
         { init = always init
@@ -26,29 +26,29 @@ type Msg
     = ReceiveDate Date
 
 
-init : ( Model, Cmd Msg )
+init : { model: Model, command : Cmd Msg }
 init =
-    ( Date.fromCalendarDate 2019 Jan 1
-    , Date.today |> Task.perform ReceiveDate
-    )
+    { model = Date.fromCalendarDate 2019 Jan 1
+    , command = Date.today |> Task.perform ReceiveDate
+    }
 
 
 
 -- update
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> { model: Model, command: Cmd Msg }
 update (ReceiveDate today) _ =
-    ( today
-    , Cmd.none
-    )
+    { model = today
+    , command = Cmd.none
+    }
 
 
 
 -- helpers
 
 
-monthDates : Int -> Month -> List Date
+monthDates : Int -> Month -> Array Date
 monthDates year month =
     let
         start =
@@ -61,13 +61,13 @@ monthDates year month =
     Date.range Day 1 start until
 
 
-groupsOf : Int -> List a -> List (List a)
+groupsOf : Int -> Array a -> Array (Array a)
 groupsOf n list =
-    if List.isEmpty list then
+    if Array.isEmpty list then
         []
 
     else
-        List.take n list :: groupsOf n (List.drop n list)
+        Array.pushFirst (Array.takeFirst n list) (groupsOf n (Array.dropFirst n list))
 
 
 
@@ -76,8 +76,8 @@ groupsOf n list =
 
 view : Model -> Browser.Document Msg
 view date =
-    Browser.Document
-        "Calendar"
+    { title = "Calendar"
+    , body =
         [ Html.div
             [ Html.Attributes.style "padding" "2em"
             , Html.Attributes.style "font-family" "Helvetica, Arial, san-serif"
@@ -93,6 +93,7 @@ view date =
             , viewMonthTable date
             ]
         ]
+    }
 
 
 weekdayHeader : Html a
@@ -102,7 +103,7 @@ weekdayHeader =
         [ Html.tr
             []
             ([ "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" ]
-                |> List.map
+                |> Array.map
                     (\str ->
                         Html.th
                             [ Html.Attributes.style "padding" "0.5em"
@@ -132,12 +133,12 @@ viewMonthTable target =
         , Html.tbody
             []
             (weeks
-                |> List.map
+                |> Array.map
                     (\weekdates ->
                         Html.tr
                             []
                             (weekdates
-                                |> List.map
+                                |> Array.map
                                     (\date ->
                                         let
                                             color =

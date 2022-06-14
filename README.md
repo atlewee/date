@@ -1,12 +1,12 @@
 # date
 
-This Elm package provides a simple `Date` type for working with dates without times or zones.
-
+This Gren package provides a simple `Date` type for working with dates without times or zones.
+It's a port of the amazing elm-package: atlewee/date
 
 ## Installation
 
 ```sh
-elm install justinmimbs/date
+gren install atlewee/date
 ```
 
 
@@ -26,37 +26,37 @@ elm install justinmimbs/date
 - Create lists of dates: [`range`][range]
 - Helpers: [`compare`][compare], [`isBetween`][isBetween], [`min`][min], [`max`][max], [`clamp`][clamp]
 
-[today]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#today
-[fromPosix]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromPosix
-[fromCalendarDate]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromCalendarDate
-[fromWeekDate]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromWeekDate
-[fromOrdinalDate]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromOrdinalDate
-[fromIsoString]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromIsoString
-[fromRataDie]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#fromRataDie
-[format]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#format
-[formatWithLanguage]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#formatWithLanguage
-[add]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#add
-[floor]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#floor
-[ceiling]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#ceiling
-[diff]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#diff
-[range]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#range
-[compare]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#compare
-[isBetween]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#isBetween
-[min]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#min
-[max]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#max
-[clamp]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date#clamp
+[today]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#today
+[fromPosix]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromPosix
+[fromCalendarDate]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromCalendarDate
+[fromWeekDate]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromWeekDate
+[fromOrdinalDate]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromOrdinalDate
+[fromIsoString]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromIsoString
+[fromRataDie]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#fromRataDie
+[format]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#format
+[formatWithLanguage]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#formatWithLanguage
+[add]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#add
+[floor]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#floor
+[ceiling]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#ceiling
+[diff]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#diff
+[range]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#range
+[compare]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#compare
+[isBetween]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#isBetween
+[min]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#min
+[max]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#max
+[clamp]: https://package.gren-lang.org/packages/atlewee/date/latest/Date#clamp
 
 
 ## Examples
 
 These examples are only meant to give a feel for the library; see [the docs][docs] for the full API.
 
-[docs]: https://package.elm-lang.org/packages/justinmimbs/date/latest/Date
+[docs]: https://package.gren-lang.org/packages/atlewee/date/latest/Date
 
 
 ### Create a date and format it
 
-```elm
+```gren
 import Date
 import Time exposing (Month(..))
 
@@ -68,7 +68,7 @@ Date.fromCalendarDate 2018 Sep 26
 
 ### Find the next Saturday after a date
 
-```elm
+```gren
 import Date exposing (Interval(..), Unit(..))
 import Time exposing (Month(..))
 
@@ -82,7 +82,7 @@ Date.fromCalendarDate 2018 Sep 26
 
 ### List the third Thursday of the month for six months of a year
 
-```elm
+```gren
 import Date exposing (Date, Interval(..), Unit(..))
 
 start : Date

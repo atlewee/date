@@ -1,4 +1,4 @@
-module Date.gren exposing
+module Date exposing
     ( Date
     , Month, Weekday
     , today, fromPosix, fromCalendarDate, fromWeekDate, fromOrdinalDate, fromIsoString, fromRataDie
@@ -55,7 +55,7 @@ module Date.gren exposing
 @docs Interval, ceiling, floor
 
 
-# Lists
+# Arrays
 
 @docs range
 
@@ -72,10 +72,10 @@ module Date.gren exposing
 -}
 
 import Parser exposing ((|.), (|=), Parser)
-import Pattern.gren exposing (Token(..))
+import Pattern exposing (Token(..))
 import Task exposing (Task)
 import Time exposing (Month(..), Posix, Weekday(..))
-
+import Math
 
 {-| The `Month` type used in this package is an alias of [`Month`][timemonth]
 from `elm/time`. To express literal values, like `Jan`, you must import them
@@ -155,7 +155,7 @@ toRataDie (RD rd) =
 
 isLeapYear : Int -> Bool
 isLeapYear y =
-    modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
+    Math.modBy 4 y == 0 && Math.modBy 100 y /= 0 || Math.modBy 400 y == 0
 
 
 daysBeforeYear : Int -> Int
@@ -174,7 +174,7 @@ daysBeforeYear y1 =
 -}
 weekdayNumber : Date -> Int
 weekdayNumber (RD rd) =
-    case rd |> modBy 7 of
+    case rd |> Math.modBy 7 of
         0 ->
             7
 
@@ -206,19 +206,19 @@ is53WeekYear y =
 year : Date -> Int
 year (RD rd) =
     let
-        ( n400, r400 ) =
+        { quotient=n400, remainder=r400 } =
             -- 400 * 365 + 97
             divWithRemainder rd 146097
 
-        ( n100, r100 ) =
+        { quotient=n100, remainder=r100 } =
             -- 100 * 365 + 24
             divWithRemainder r400 36524
 
-        ( n4, r4 ) =
+        { quotient=n4, remainder=r4 } =
             -- 4 * 365 + 1
             divWithRemainder r100 1461
 
-        ( n1, r1 ) =
+        { quotient=n1, remainder=r1 } =
             divWithRemainder r4 365
 
         n =
@@ -690,9 +690,9 @@ formatField language char length date =
 
 {-| Expects `tokens` list reversed for foldl.
 -}
-formatWithTokens : Language -> List Token -> Date -> String
+formatWithTokens : Language -> Array Token -> Date -> String
 formatWithTokens language tokens date =
-    List.foldl
+    Array.foldl
         (\token formatted ->
             case token of
                 Field char length ->
@@ -719,7 +719,7 @@ formatWithLanguage : Language -> String -> Date -> String
 formatWithLanguage language pattern =
     let
         tokens =
-            pattern |> Pattern.gren.fromString |> List.reverse
+            pattern |> Pattern.fromString |> Array.reverse
     in
     formatWithTokens language tokens
 
@@ -798,7 +798,7 @@ ordinalSuffix n =
     let
         -- use 2-digit number
         nn =
-            n |> modBy 100
+            n |> Math.modBy 100
     in
     case
         Basics.min
@@ -806,7 +806,7 @@ ordinalSuffix n =
                 nn
 
              else
-                nn |> modBy 10
+                nn |> Math.modBy 10
             )
             4
     of
@@ -952,7 +952,7 @@ fromIsoString =
                     |> Parser.andThen resultToParser
                )
         )
-        >> Result.mapError (List.head >> Maybe.map deadEndToString >> Maybe.withDefault "")
+        >> Result.mapError (Array.first >> Maybe.map deadEndToString >> Maybe.withDefault "")
 
 
 deadEndToString : Parser.DeadEnd -> String
@@ -985,17 +985,17 @@ type DayOfYear
     | OrdinalDay Int
 
 
-fromYearAndDayOfYear : ( Int, DayOfYear ) -> Result String Date
-fromYearAndDayOfYear ( y, doy ) =
-    case doy of
+fromYearAndDayOfYear : { year: Int, dayOfYear: DayOfYear } -> Result String Date
+fromYearAndDayOfYear x =
+    case x.dayOfYear of
         MonthAndDay mn d ->
-            fromCalendarParts y mn d
+            fromCalendarParts x.year mn d
 
         WeekAndWeekday wn wdn ->
-            fromWeekParts y wn wdn
+            fromWeekParts x.year wn wdn
 
         OrdinalDay od ->
-            fromOrdinalParts y od
+            fromOrdinalParts x.year od
 
 
 
@@ -1004,7 +1004,7 @@ fromYearAndDayOfYear ( y, doy ) =
 
 parser : Parser Date
 parser =
-    Parser.succeed Tuple.pair
+    Parser.succeed (\y doy -> { year = y, dayOfYear = doy })
         |= int4
         |= dayOfYear
         |> Parser.andThen
@@ -1068,10 +1068,10 @@ dayOfYear =
 
 int4 : Parser Int
 int4 =
-    Parser.succeed ()
+    Parser.succeed {}
         |. Parser.oneOf
             [ Parser.chompIf (\c -> c == '-')
-            , Parser.succeed ()
+            , Parser.succeed {}
             ]
         |. Parser.chompIf Char.isDigit
         |. Parser.chompIf Char.isDigit
@@ -1083,7 +1083,7 @@ int4 =
 
 int3 : Parser Int
 int3 =
-    Parser.succeed ()
+    Parser.succeed Unit
         |. Parser.chompIf Char.isDigit
         |. Parser.chompIf Char.isDigit
         |. Parser.chompIf Char.isDigit
@@ -1093,7 +1093,7 @@ int3 =
 
 int2 : Parser Int
 int2 =
-    Parser.succeed ()
+    Parser.succeed Unit
         |. Parser.chompIf Char.isDigit
         |. Parser.chompIf Char.isDigit
         |> Parser.mapChompedString
@@ -1152,7 +1152,7 @@ add unit n (RD rd) =
                     floorDiv wholeMonths 12 + 1
 
                 m =
-                    (wholeMonths |> modBy 12) + 1 |> numberToMonth
+                    (wholeMonths |> Math.modBy 12) + 1 |> numberToMonth
             in
             RD <| daysBeforeYear y + daysBeforeMonth y m + Basics.min date.day (daysInMonth y m)
 
@@ -1193,10 +1193,10 @@ diff : Unit -> Date -> Date -> Int
 diff unit (RD rd1) (RD rd2) =
     case unit of
         Years ->
-            (toMonths rd2 - toMonths rd1 |> truncate) // 12
+            (toMonths rd2 - toMonths rd1 |> Math.truncate) // 12
 
         Months ->
-            toMonths rd2 - toMonths rd1 |> truncate
+            toMonths rd2 - toMonths rd1 |> Math.truncate
 
         Weeks ->
             (rd2 - rd1) // 7
@@ -1227,7 +1227,7 @@ type Interval
 
 daysSincePreviousWeekday : Weekday -> Date -> Int
 daysSincePreviousWeekday wd date =
-    (weekdayNumber date + 7 - weekdayToNumber wd) |> modBy 7
+    (weekdayNumber date + 7 - weekdayToNumber wd) |> Math.modBy 7
 
 
 {-| Round down a date to the beginning of the closest interval. The resulting
@@ -1280,23 +1280,23 @@ floor interval ((RD rd) as date) =
             date
 
 
-intervalToUnits : Interval -> ( Int, Unit )
+intervalToUnits : Interval -> { number: Int, unit: Unit }
 intervalToUnits interval =
     case interval of
         Year ->
-            ( 1, Years )
+            { number = 1, unit = Years }
 
         Quarter ->
-            ( 3, Months )
+            { number = 3, unit = Months }
 
         Month ->
-            ( 1, Months )
+            { number = 1, unit = Months }
 
         Day ->
-            ( 1, Days )
+            { number = 1, unit = Days }
 
         week ->
-            ( 1, Weeks )
+            { number = 1, unit = Weeks }
 
 
 {-| Round up a date to the beginning of the closest interval. The resulting
@@ -1320,10 +1320,10 @@ ceiling interval date =
 
     else
         let
-            ( n, unit ) =
+            { number, unit } =
                 interval |> intervalToUnits
         in
-        floored |> add unit n
+        floored |> add unit number
 
 
 
@@ -1347,33 +1347,33 @@ before the second date.
            ]
 
 -}
-range : Interval -> Int -> Date -> Date -> List Date
+range : Interval -> Int -> Date -> Date -> Array Date
 range interval step (RD start) (RD until) =
     let
-        ( n, unit ) =
+        { number, unit } =
             interval |> intervalToUnits
 
         (RD first) =
             RD start |> ceiling interval
     in
     if first < until then
-        rangeHelp unit (Basics.max 1 step * n) until [] first
+        rangeHelp unit (Basics.max 1 step * number) until [] first
 
     else
         []
 
 
-rangeHelp : Unit -> Int -> RataDie -> List Date -> RataDie -> List Date
-rangeHelp unit step until revList current =
+rangeHelp : Unit -> Int -> RataDie -> Array Date -> RataDie -> Array Date
+rangeHelp unit step until array current =
     if current < until then
         let
             (RD next) =
                 RD current |> add unit step
         in
-        rangeHelp unit step until (RD current :: revList) next
+        rangeHelp unit step until (Array.pushLast (RD current) array) next
 
     else
-        List.reverse revList
+        array
 
 
 
@@ -1416,7 +1416,7 @@ today =
 
 
 {-| Compare two dates. This can be used as the compare function for
-`List.sortWith`.
+`Array.sortWith`.
 
     import Date exposing (fromOrdinalDate, compare)
 
@@ -1752,20 +1752,21 @@ padSignedInt length int =
      else
         ""
     )
-        ++ (abs int |> String.fromInt |> String.padLeft length '0')
+        ++ (Math.abs int |> String.fromInt |> String.padLeft length '0')
 
 
 floorDiv : Int -> Int -> Int
 floorDiv a b =
-    Basics.floor (toFloat a / toFloat b)
+    Math.floor (toFloat a / toFloat b)
 
 
 {-| integer division, returning (Quotient, Remainder)
 -}
-divWithRemainder : Int -> Int -> ( Int, Int )
+divWithRemainder : Int -> Int -> { quotient: Int, remainder: Int }
 divWithRemainder a b =
-    ( floorDiv a b, a |> modBy b )
-
+    { quotient = floorDiv a b
+    , remainder = a |> Math.modBy b 
+    }
 
 isBetweenInt : Int -> Int -> Int -> Bool
 isBetweenInt a b x =

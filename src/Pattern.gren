@@ -1,4 +1,4 @@
-module Pattern.gren exposing (Pattern, Token(..), fromString)
+module Pattern exposing (Pattern, Token(..), fromString)
 
 import Char
 import Parser exposing ((|.), (|=), Parser)
@@ -9,7 +9,7 @@ import Parser exposing ((|.), (|=), Parser)
 
 
 type alias Pattern =
-    List Token
+    Array Token
 
 
 type Token
@@ -36,7 +36,7 @@ field =
 
 fieldRepeats : String -> Parser Token
 fieldRepeats str =
-    case String.toList str of
+    case String.toArray str of
         [ char ] ->
             Parser.succeed (\x y -> Field char (1 + (y - x)))
                 |= Parser.getOffset
@@ -55,7 +55,7 @@ escapedQuote =
 
 literal : Parser Token
 literal =
-    Parser.succeed ()
+    Parser.succeed Unit
         |. Parser.chompIf isLiteralChar
         |. Parser.chompWhile isLiteralChar
         |> Parser.getChompedString
@@ -81,7 +81,7 @@ quoted =
 quotedHelp : String -> Parser String
 quotedHelp result =
     Parser.oneOf
-        [ Parser.succeed ()
+        [ Parser.succeed Unit
             |. Parser.chompIf ((/=) '\'')
             |. Parser.chompWhile ((/=) '\'')
             |> Parser.getChompedString
@@ -92,7 +92,7 @@ quotedHelp result =
         ]
 
 
-patternHelp : List Token -> Parser (List Token)
+patternHelp : Array Token -> Parser (Array Token)
 patternHelp tokens =
     Parser.oneOf
         [ Parser.oneOf
@@ -101,7 +101,7 @@ patternHelp tokens =
             , escapedQuote
             , quoted
             ]
-            |> Parser.andThen (\token -> patternHelp (token :: tokens))
+            |> Parser.andThen (\token -> patternHelp (Array.pushFirst token tokens))
         , Parser.lazy
             (\_ -> Parser.succeed (finalize tokens))
         ]
@@ -109,15 +109,19 @@ patternHelp tokens =
 
 {-| Reverse list and combine consecutive Literals.
 -}
-finalize : List Token -> List Token
+finalize : Array Token -> Array Token
 finalize =
-    List.foldl
+    Array.foldl
         (\token tokens ->
-            case ( token, tokens ) of
-                ( Literal x, (Literal y) :: rest ) ->
-                    Literal (x ++ y) :: rest
+            case Array.popFirst tokens of 
+                Nothing -> 
+                    Array.pushFirst token tokens 
 
-                _ ->
-                    token :: tokens
+                Just {first,rest} -> 
+                    case { token=token,first=first} of 
+                        { token = Literal x, first = Literal y } ->
+                            Array.pushFirst (Literal (x ++ y)) rest
+                        _ -> 
+                            Array.pushFirst token tokens
         )
         []
